@@ -116,11 +116,11 @@ spec:
         updateGitlabCommitStatus name: 'build', state: 'pending'
         container('maven') {
           sh 'env; pwd;ls -al'
-                sh 'cat src/main/resources/templates/owners/findOwners.html'
 	  checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'brown-redcloud3-token', url: "${GITHUB_PROJECT_URL}.git"]]] 
           dir('.') {
             sh 'ls -al'
             sh 'mvn compile'
+            sh 'cat src/main/resources/templates/owners/findOwners.html'
           }
         }
         mattermostSend channel: "${MATTERMOST_CHANNEL}", endpoint: "${MATTERMOST_WEBHOOK}", message: "Job: ${JOB_NAME} \nStage: ${STAGE_NAME}\nBuild: ${BUILD_URL}\nCommit: ${GITHUB_PROJECT_URL}"
