@@ -104,7 +104,7 @@ spec:
     QUAY_DOCKER_TAG = "${QUAY_REGISTRY_ADDRESS}/quay/${GITHUB_PROJECT}-${BRANCH_NAME}:${APPLICATION_MAJOR_VERSION}.${APPLICATION_MINOR_VERSION}.${env.BUILD_NUMBER}"
     DEVCLOUD_BRANCH_TAG = "master"
     MATTERMOST_CHANNEL = "brown-redcloud3-spring-petclinic"
-    MATTERMOST_WEBHOOK = "https://mattermost.mgt.brown.perspectatechdemos.com/hooks/hndpegn1nt8ffe9k4d77myyqfe"
+    MATTERMOST_WEBHOOK = "https://mattermost.mgt.brown.perspectatechdemos.com/hooks/ypwftp64tin1jnewhjm9jpzk6e"
     ARTIFACTORY_URL = "https://artifactory.mgt.brown.perspectatechdemos.com"
     NEXUS_ARTIFACT_URL = "https://nexus.mgt.brown.perspectatechdemos.com/#browse/search/docker"
     SONARQUBE_URL = "https://sonarqube.mgt.brown.perspectatechdemos.com"
@@ -189,29 +189,12 @@ spec:
         mattermostSend channel: "${MATTERMOST_CHANNEL}", endpoint: "${MATTERMOST_WEBHOOK}", message: "Job: ${JOB_NAME} \nStage: ${STAGE_NAME}\nBuild: ${BUILD_URL}\nCommit: ${GITHUB_PROJECT_URL}\nArtifact: ${NEXUS_ARTIFACT_URL}"
       }
     }
-    stage('Scan Image') {
-      steps {
-        container(name: 'kaniko-quay', shell: '/busybox/sh') {
-          dir('.') {
-            withEnv(['PATH+EXTRA=/busybox']) {
-              retry(3) {
-
-              sh '''#!/busybox/sh
-              /kaniko/executor --whitelist-var-run --context `pwd` --destination ${QUAY_DOCKER_TAG}
-              '''
-            }
-          }
-        }
-        }
-        mattermostSend channel: "${MATTERMOST_CHANNEL}", endpoint: "${MATTERMOST_WEBHOOK}", message: "Job: ${JOB_NAME} \nStage: ${STAGE_NAME}\nBuild: ${BUILD_URL}\nCommit: ${GITHUB_PROJECT_URL}\nArtifact: ${NEXUS_ARTIFACT_URL}"
-      }
-    }
     stage('Deploy Dev') {
       steps {
         container('ubuntu') {
             sh "apt update -y && apt-get install wget git -y"
             checkout changelog: false, poll: false, scm: [$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'brown-redcloud3-token', url: "${GITHUB_PROJECT_URL}.git"]]]
-            sh "cd /usr/local/bin && wget https://redcloud3.s3.amazonaws.com/tools/oc-4.3.2-linux.tar.gz && tar -xvf oc-4.3.2-linux.tar.gz"
+            sh "cd /usr/local/bin && wget https://redcloud3-static.s3.amazonaws.com/oc-4.3.2-linux.tar.gz && tar -xvf oc-4.3.2-linux.tar.gz"
           dir('.') {
             sh "sed 's#__BRANCH__#${BRANCH_NAME}#g' springboot.yaml > branch-springboot-dev.yaml"
             sh "sed 's#__PROJECT__#dev#g' branch-springboot-dev.yaml > springboot-dev.yaml"
